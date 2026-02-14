@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="20dp"
+    android:fitsSystemWindows="true"
+    android:background="@color/main_background">
+
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="15dp"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/arrow_back"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="আপনার রেকর্ডসমূহ"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/search_div"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header"
+        android:orientation="vertical"
+        android:paddingHorizontal="15dp">
+
+        <EditText
+            android:id="@+id/searchBarMain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:hint="পরোয়ানা খোঁজ"
+            android:drawableLeft="@drawable/search"
+            android:drawableTint="@color/slate_400"
+            android:padding="10dp"
+            android:drawablePadding="10dp"
+            android:textColorHint="@color/slate_400"
+            android:textColor="@color/white" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:weightSum="3">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRunningFilter"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="চলমান"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:background="@drawable/card_bg"
+                android:layout_marginEnd="2dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnDoneFilter"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="নিস্পত্তি"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:background="@drawable/card_bg"
+                android:layout_marginHorizontal="2dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTotalFilter"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="মোট"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:background="@drawable/card_bg"
+                android:layout_marginStart="2dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/searchTotalItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_gravity="center"
+            android:textColor="@color/emerald_400"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/accusedFrontList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/search_div"
+        android:paddingHorizontal="15dp"
+        android:paddingBottom="10dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/accused_list" />
+
+</RelativeLayout>

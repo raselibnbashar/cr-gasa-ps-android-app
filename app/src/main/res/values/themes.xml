@@ -1,0 +1,31 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.CR" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowNoTitle">true</item>
+
+        <!-- Use the app's dark background as default -->
+        <item name="android:windowBackground">@color/main_background</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="colorPrimary">@color/emerald_400</item>
+
+        <!-- Fix AutoCompleteTextView dropdown visibility in dark backgrounds -->
+        <item name="android:dropDownListViewStyle">@style/CustomDropDownListView</item>
+    </style>
+
+    <style name="CustomDropDownListView" parent="Widget.AppCompat.ListView.DropDown">
+        <item name="android:background">@color/slate_800</item>
+        <item name="android:divider">@color/slate_700</item>
+        <item name="android:dividerHeight">0.5dp</item>
+    </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/main_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.CR</item>
+    </style>
+</resources>

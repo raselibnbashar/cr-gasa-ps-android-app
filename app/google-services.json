@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "352694370237",
+    "project_id": "cr-gasa",
+    "storage_bucket": "cr-gasa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352694370237:android:897242f29c76f85e669cd4",
+        "android_client_info": {
+          "package_name": "com.example.cr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA704pXgkHhpaNbuFSpNUw6EIps37C7edM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

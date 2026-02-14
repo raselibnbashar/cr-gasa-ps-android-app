@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/windowBackground"
+    android:paddingTop="20dp"
+    android:fitsSystemWindows="true">
+
+    <RelativeLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp">
+
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/arrow_back"
+            app:tint="?android:attr/textColorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="নতুন পরোয়ানা যোগ করুন"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header"
+        android:padding="15dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <EditText
+                android:id="@+id/inputName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="আসামির নাম"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="10dp"/>
+
+            <EditText
+                android:id="@+id/inputGuardian"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="অভিবাবক"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="10dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/inputWard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="ওয়ার্ড"
+                    android:padding="12dp"
+                    android:background="@drawable/card_bg"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/slate_400"
+                    android:layout_marginRight="5dp"
+                    android:completionThreshold="1"/>
+
+                <AutoCompleteTextView
+                    android:id="@+id/inputVillage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="গ্রাম"
+                    android:padding="12dp"
+                    android:background="@drawable/card_bg"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/slate_400"
+                    android:layout_marginLeft="5dp"
+                    android:completionThreshold="1"/>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/inputAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="ঠিকানা"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="10dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <EditText
+                    android:id="@+id/inputCaseNo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="আদালত মামলা নম্বর"
+            android:inputType="text"
+            android:padding="12dp"
+            android:background="@drawable/card_bg"
+            android:textColor="@color/white"
+            android:textColorHint="@color/slate_400"
+            android:layout_marginRight="5dp"/>
+
+            <EditText
+                android:id="@+id/inputSection"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="ধারা"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginLeft="5dp"/>
+        </LinearLayout>
+
+        <EditText
+                android:id="@+id/inputCourt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="আদালতের নাম"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="10dp"/>
+
+            <AutoCompleteTextView
+                android:id="@+id/inputCourtDist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="আদালতের জেলা"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="10dp"
+                android:completionThreshold="1"/>
+
+            <EditText
+                android:id="@+id/inputCp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="সিপি নম্বর"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="10dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <EditText
+                    android:id="@+id/inputProcess"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="প্রসেস নম্বর"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:background="@drawable/card_bg"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/slate_400"/>
+            </LinearLayout>
+
+            <AutoCompleteTextView
+                android:id="@+id/inputOfficerSl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="অফিসার"
+                android:padding="12dp"
+                android:background="@drawable/card_bg"
+                android:textColor="@color/white"
+                android:textColorHint="@color/slate_400"
+                android:layout_marginBottom="20dp"
+                android:completionThreshold="1"/>
+
+            <Button
+                android:id="@+id/saveBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="সংরক্ষণ করুন"
+                android:backgroundTint="@color/emerald_400"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:padding="15dp"
+                app:cornerRadius="10dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
