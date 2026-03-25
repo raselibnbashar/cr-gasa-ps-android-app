@@ -27,10 +27,16 @@ import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -190,9 +196,17 @@ public class AccusedDetailActivity extends AppCompatActivity {
         XWPFDocument document = new XWPFDocument();
 
         // Header
-        addParagraph(document, "বরাবর,", false);
-        addParagraph(document, currentAccused.getCourt_name() + ",", false);
-        addParagraph(document, currentAccused.getCourt_district() + "।", false);
+        XWPFParagraph headerPara = document.createParagraph();
+        headerPara.setAlignment(ParagraphAlignment.LEFT);
+        headerPara.setSpacingAfter(0);
+        XWPFRun headerRun = headerPara.createRun();
+        headerRun.setText("বরাবর,");
+        headerRun.addBreak();
+        headerRun.addTab();
+        headerRun.setText(currentAccused.getCourt_name() + ",");
+        headerRun.addBreak();
+        headerRun.addTab();
+        headerRun.setText(currentAccused.getCourt_district() + "।");
 
         addParagraph(document, "", false);
         addParagraph(document, "মাধ্যমঃ সহকারী পুলিশ কমিশনার (প্রসিকিউশন), মহানগর কোর্ট, গাজীপুর।", false);
@@ -210,7 +224,7 @@ public class AccusedDetailActivity extends AppCompatActivity {
         if (pMap != null && !pMap.isEmpty()) {
             TreeMap<String, String> sorted = new TreeMap<>((a, b) -> b.compareTo(a));
             sorted.putAll(pMap);
-            processNo = sorted.firstEntry().getValue() + "/" + sorted.firstEntry().getKey().substring(2);
+            processNo = sorted.firstEntry().getValue();
         }
 
         addParagraph(document, String.format("সূত্রঃ %s, ধারাঃ %s, প্রসেস নং- %s।", 
@@ -226,53 +240,26 @@ public class AccusedDetailActivity extends AppCompatActivity {
         XWPFParagraph bodyPara = document.createParagraph();
         bodyPara.setAlignment(ParagraphAlignment.BOTH);
         XWPFRun bodyRun = bodyPara.createRun();
+        bodyRun.addTab(); // Added tab to first line of body text
         bodyRun.setText(bodyText);
 
         addParagraph(document, "", false);
-        addParagraph(document, "অতএব ,ইহা আপনার সদয় অবগতির ও পরবর্তী কার্যকরী ব্যবস্থা গ্রহণের জন্য প্রেরণ করিলাম।", false);
+        XWPFParagraph ataPara = document.createParagraph();
+        XWPFRun ataRun = ataPara.createRun();
+        ataRun.addTab();
+        ataRun.setText("অতএব ,ইহা আপনার সদয় অবগতির ও পরবর্তী কার্যকরী ব্যবস্থা গ্রহণের জন্য প্রেরণ করিলাম।");
 
         addParagraph(document, "", false);
-        
-        XWPFParagraph footerTitlePara = document.createParagraph();
-        XWPFRun footerTitleRun = footerTitlePara.createRun();
-        footerTitleRun.setText("সংযুক্তঃ");
-        XWPFRun footerRightRun = footerTitlePara.createRun();
-        footerRightRun.addTab();
-        footerRightRun.addTab();
-        footerRightRun.addTab();
-        footerRightRun.addTab();
-        footerRightRun.setText("বিনীত");
 
-        addParagraph(document, "১। প্রত্যয়ন ০১ পাতা।", false);
-        addParagraph(document, "২। ওয়ারেন্টের কপি ০১ পাতা।", false);
+        // footer feature start
 
-        addParagraph(document, "", false);
-        addParagraph(document, "", false);
-        
-        XWPFParagraph signPara = document.createParagraph();
-        signPara.setAlignment(ParagraphAlignment.RIGHT);
-        XWPFRun signRun = signPara.createRun();
-        
-        String namePart = officerNameRank;
-        String rankPart = "";
-        if (officerNameRank.contains(" ")) {
-            int lastSpace = officerNameRank.lastIndexOf(" ");
-            namePart = officerNameRank.substring(0, lastSpace);
-            rankPart = officerNameRank.substring(lastSpace + 1);
-        }
-
-        signRun.setText("(" + namePart + ")");
-        signRun.addBreak();
-        signRun.setText("বিপি-" + (officerBP != null ? officerBP : ""));
-        signRun.addBreak();
-        signRun.setText(rankPart);
-        signRun.addBreak();
-        signRun.setText(officerStation);
+        // footer feature end
 
         saveDocument(document, "Report_" + currentAccused.getName().replace(" ", "_") + ".docx");
     }
 
     private void exportCertificateToDocx() {
+
         if (currentAccused == null) return;
 
         XWPFDocument document = new XWPFDocument();
@@ -297,6 +284,7 @@ public class AccusedDetailActivity extends AppCompatActivity {
         bodyPara.setAlignment(ParagraphAlignment.BOTH);
         XWPFRun bodyRun = bodyPara.createRun();
         bodyRun.setFontSize(12);
+        bodyRun.addTab(); // Added tab to first line of body text
         bodyRun.setText(bodyText);
 
         saveDocument(document, "Certificate_" + currentAccused.getName().replace(" ", "_") + ".docx");

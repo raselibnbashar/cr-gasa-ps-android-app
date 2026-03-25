@@ -7,14 +7,18 @@
     android:orientation="vertical"
     android:padding="20dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnBackup"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/card_bg"
+        android:text="Export JSON for Backup"
         android:layout_marginBottom="24dp"
-        android:text="প্রোফাইল"
         android:textColor="@color/white"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textSize="16sp"
+        android:textAllCaps="false" />
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"

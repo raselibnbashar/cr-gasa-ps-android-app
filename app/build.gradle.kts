@@ -45,5 +45,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.google.firebase:firebase-database:22.0.1")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
+    implementation(libs.gson)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
