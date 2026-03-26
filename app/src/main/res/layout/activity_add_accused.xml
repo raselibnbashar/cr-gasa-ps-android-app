@@ -22,6 +22,7 @@
             app:tint="?android:attr/textColorPrimary" />
 
         <TextView
+            android:id="@+id/addTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -124,28 +125,28 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="আদালত মামলা নম্বর"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@drawable/card_bg"
-            android:textColor="@color/white"
-            android:textColorHint="@color/slate_400"
-            android:layout_marginRight="5dp"/>
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:background="@drawable/card_bg"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/slate_400"
+                    android:layout_marginRight="5dp"/>
+
+                <EditText
+                    android:id="@+id/inputSection"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="ধারা"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:background="@drawable/card_bg"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/slate_400"
+                    android:layout_marginLeft="5dp"/>
+            </LinearLayout>
 
             <EditText
-                android:id="@+id/inputSection"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="ধারা"
-                android:inputType="text"
-                android:padding="12dp"
-                android:background="@drawable/card_bg"
-                android:textColor="@color/white"
-                android:textColorHint="@color/slate_400"
-                android:layout_marginLeft="5dp"/>
-        </LinearLayout>
-
-        <EditText
                 android:id="@+id/inputCourt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

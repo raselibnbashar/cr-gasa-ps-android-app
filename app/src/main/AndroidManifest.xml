@@ -39,6 +39,10 @@
             android:name=".OfficerRecordsActivity"
             android:exported="true" />
 
+        <activity
+            android:name=".AddOfficerActivity"
+            android:exported="true" />
+
     </application>
 
 </manifest>

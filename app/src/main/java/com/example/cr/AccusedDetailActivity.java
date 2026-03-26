@@ -1,6 +1,7 @@
 package com.example.cr;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,16 +28,10 @@ import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -54,6 +49,7 @@ public class AccusedDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_accused_detail);
 
         ImageView backBtn = findViewById(R.id.backBtn);
+        ImageView editBtn = findViewById(R.id.editBtn);
         TextView name = findViewById(R.id.detailName);
         TextView guardian = findViewById(R.id.detailGuardian);
         TextView caseNo = findViewById(R.id.detailCaseNo);
@@ -116,6 +112,12 @@ public class AccusedDetailActivity extends AppCompatActivity {
             btnReport.setOnClickListener(v -> exportToDocx());
             btnCertificate.setOnClickListener(v -> exportCertificateToDocx());
 
+            editBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(AccusedDetailActivity.this, AddAccusedActivity.class);
+                intent.putExtra("accused", currentAccused);
+                startActivity(intent);
+            });
+
             if (currentAccused.getStep() >= 2) {
                 name.setTextColor(ContextCompat.getColor(this, R.color.emerald_400));
             } else {
@@ -151,9 +153,11 @@ public class AccusedDetailActivity extends AppCompatActivity {
                     Object activeObj = snapshot.child("active").getValue();
                     Object stepObj = snapshot.child("step").getValue();
                     if (activeObj != null && stepObj != null) {
-                        int active = Integer.parseInt(activeObj.toString());
-                        int step = Integer.parseInt(stepObj.toString());
-                        updateButtonUI(active, step);
+                        try {
+                            int active = Integer.parseInt(activeObj.toString());
+                            int step = Integer.parseInt(stepObj.toString());
+                            updateButtonUI(active, step);
+                        } catch (NumberFormatException e) {}
                     }
                 }
             }
@@ -250,10 +254,6 @@ public class AccusedDetailActivity extends AppCompatActivity {
         ataRun.setText("অতএব ,ইহা আপনার সদয় অবগতির ও পরবর্তী কার্যকরী ব্যবস্থা গ্রহণের জন্য প্রেরণ করিলাম।");
 
         addParagraph(document, "", false);
-
-        // footer feature start
-
-        // footer feature end
 
         saveDocument(document, "Report_" + currentAccused.getName().replace(" ", "_") + ".docx");
     }

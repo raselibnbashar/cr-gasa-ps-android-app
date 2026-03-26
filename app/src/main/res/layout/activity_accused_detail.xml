@@ -29,6 +29,15 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/editBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/edit"
+            app:tint="?android:attr/textColorPrimary" />
     </RelativeLayout>
 
     <LinearLayout
@@ -298,11 +307,13 @@
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"
                     android:background="@drawable/card_bg"
-                    android:text="প্রত্যয়ন"
+                    android:text="প্রত্যয়ন পত্র"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textAllCaps="false" />
+
             </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

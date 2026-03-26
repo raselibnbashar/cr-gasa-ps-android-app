@@ -9,6 +9,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class AddAccusedActivity extends AppCompatActivity {
 
@@ -33,6 +35,7 @@ public class AddAccusedActivity extends AppCompatActivity {
     private AutoCompleteTextView inputWard, inputVillage, inputCourtDist, inputOfficerSl;
     private Button saveBtn;
     private ImageView backBtn;
+    private TextView addTitle;
     private DatabaseReference databaseReference, wardReference, districtsReference, officerReference;
     
     private List<String> wardList = new ArrayList<>();
@@ -42,6 +45,10 @@ public class AddAccusedActivity extends AppCompatActivity {
     private Map<String, List<String>> wardToVillages = new HashMap<>();
     private Map<String, List<OfficerInfo>> wardToOfficers = new HashMap<>();
     private Map<Integer, Integer> officerSlToCount = new HashMap<>();
+    private Map<Integer, String> officerSlToNameRank = new HashMap<>();
+
+    private Accused editAccused;
+    private boolean isEditMode = false;
 
     private static class OfficerInfo {
         String nameRank;
@@ -63,6 +70,7 @@ public class AddAccusedActivity extends AppCompatActivity {
         districtsReference = FirebaseDatabase.getInstance().getReference("districts");
         officerReference = FirebaseDatabase.getInstance().getReference("officer");
 
+        addTitle = findViewById(R.id.addTitle);
         inputName = findViewById(R.id.inputName);
         inputGuardian = findViewById(R.id.inputGuardian);
         inputAddress = findViewById(R.id.inputAddress);
@@ -87,6 +95,14 @@ public class AddAccusedActivity extends AppCompatActivity {
         fetchWardData();
         fetchDistrictData();
         fetchOfficerAndAccusedCount();
+
+        editAccused = (Accused) getIntent().getSerializableExtra("accused");
+        if (editAccused != null) {
+            isEditMode = true;
+            if (addTitle != null) addTitle.setText("পরোয়ানা আপডেট করুন");
+            saveBtn.setText("আপডেট করুন");
+            populateFields();
+        }
 
         saveBtn.setOnClickListener(v -> saveAccused());
         backBtn.setOnClickListener(v -> finish());
@@ -122,6 +138,33 @@ public class AddAccusedActivity extends AppCompatActivity {
         });
     }
 
+    private void populateFields() {
+        inputName.setText(editAccused.getName());
+        inputGuardian.setText(editAccused.getGuardian());
+        inputAddress.setText(editAccused.getAddress());
+        inputWard.setText(editAccused.getWard());
+        inputCaseNo.setText(editAccused.getCase_number());
+        inputSection.setText(editAccused.getSection());
+        inputCourt.setText(editAccused.getCourt_name());
+        inputCourtDist.setText(editAccused.getCourt_district());
+        
+        // Handle Process
+        Map<String, String> processMap = editAccused.getProcces();
+        if (processMap != null && !processMap.isEmpty()) {
+            TreeMap<String, String> sortedMap = new TreeMap<>((a, b) -> b.compareTo(a));
+            sortedMap.putAll(processMap);
+            inputProcess.setText(sortedMap.firstEntry().getValue());
+        }
+
+        // Handle CP
+        Map<String, String> cpMap = editAccused.getCp();
+        if (cpMap != null && !cpMap.isEmpty()) {
+            TreeMap<String, String> sortedMap = new TreeMap<>((a, b) -> b.compareTo(a));
+            sortedMap.putAll(cpMap);
+            inputCp.setText(sortedMap.firstEntry().getValue());
+        }
+    }
+
     private void fetchWardData() {
         wardReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -152,6 +195,11 @@ public class AddAccusedActivity extends AppCompatActivity {
                     ArrayAdapter<String> wardAdapter = new ArrayAdapter<>(AddAccusedActivity.this,
                             android.R.layout.simple_list_item_1, wardList);
                     inputWard.setAdapter(wardAdapter);
+                    
+                    if (isEditMode) {
+                        updateVillageDropdown(editAccused.getWard());
+                        // Try to extract village from address if needed, but for now just populate dropdown
+                    }
                 }
             }
 
@@ -195,8 +243,10 @@ public class AddAccusedActivity extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Object slNoObj = snapshot.child("officer_sl_no").getValue();
                     if (slNoObj != null) {
-                        int slNo = Integer.parseInt(String.valueOf(slNoObj));
-                        officerSlToCount.put(slNo, officerSlToCount.getOrDefault(slNo, 0) + 1);
+                        try {
+                            int slNo = Integer.parseInt(String.valueOf(slNoObj));
+                            officerSlToCount.put(slNo, officerSlToCount.getOrDefault(slNo, 0) + 1);
+                        } catch (NumberFormatException e) {}
                     }
                 }
                 fetchOfficerData();
@@ -214,6 +264,7 @@ public class AddAccusedActivity extends AppCompatActivity {
                 officerNames.clear();
                 officerNameToSl.clear();
                 wardToOfficers.clear();
+                officerSlToNameRank.clear();
                 if (snapshot.exists()) {
                     for (DataSnapshot officerSnapshot : snapshot.getChildren()) {
                         String nameRank = officerSnapshot.child("name_rank").getValue(String.class);
@@ -227,6 +278,7 @@ public class AddAccusedActivity extends AppCompatActivity {
                             
                             officerNames.add(displayName);
                             officerNameToSl.put(displayName, slNo);
+                            officerSlToNameRank.put(slNo, nameRank);
                             
                             if (wardNoObj != null) {
                                 String wardNo = String.valueOf(wardNoObj);
@@ -237,7 +289,17 @@ public class AddAccusedActivity extends AppCompatActivity {
                             }
                         }
                     }
-                    updateOfficerDropdown(inputWard.getText().toString());
+                    
+                    if (isEditMode) {
+                        updateOfficerDropdown(editAccused.getWard());
+                        String nameRank = officerSlToNameRank.get(editAccused.getOfficer_sl_no());
+                        if (nameRank != null) {
+                            int count = officerSlToCount.getOrDefault(editAccused.getOfficer_sl_no(), 0);
+                            inputOfficerSl.setText(nameRank + " (" + count + ")");
+                        }
+                    } else {
+                        updateOfficerDropdown(inputWard.getText().toString());
+                    }
                 }
             }
 
@@ -254,8 +316,6 @@ public class AddAccusedActivity extends AppCompatActivity {
             ArrayAdapter<String> villageAdapter = new ArrayAdapter<>(AddAccusedActivity.this,
                     android.R.layout.simple_list_item_1, villages);
             inputVillage.setAdapter(villageAdapter);
-            inputVillage.setText(""); 
-            inputVillage.showDropDown();
         }
     }
 
@@ -269,10 +329,8 @@ public class AddAccusedActivity extends AppCompatActivity {
             ArrayAdapter<String> officerAdapter = new ArrayAdapter<>(AddAccusedActivity.this,
                     android.R.layout.simple_list_item_1, displayNames);
             inputOfficerSl.setAdapter(officerAdapter);
-            inputOfficerSl.setText(""); 
         } else {
             inputOfficerSl.setAdapter(null);
-            inputOfficerSl.setText("");
         }
     }
 
@@ -308,11 +366,6 @@ public class AddAccusedActivity extends AppCompatActivity {
             inputWard.requestFocus();
             return;
         }
-        if (TextUtils.isEmpty(village)) {
-            inputVillage.setError("গ্রাম প্রয়োজন");
-            inputVillage.requestFocus();
-            return;
-        }
         if (TextUtils.isEmpty(address)) {
             inputAddress.setError("ঠিকানা প্রয়োজন");
             inputAddress.requestFocus();
@@ -338,16 +391,7 @@ public class AddAccusedActivity extends AppCompatActivity {
             inputCourtDist.requestFocus();
             return;
         }
-        if (TextUtils.isEmpty(cp)) {
-            inputCp.setError("সিপি নম্বর প্রয়োজন");
-            inputCp.requestFocus();
-            return;
-        }
-        if (TextUtils.isEmpty(process)) {
-            inputProcess.setError("প্রসেস নম্বর প্রয়োজন");
-            inputProcess.requestFocus();
-            return;
-        }
+        
         if (TextUtils.isEmpty(officerDisplayName)) {
             inputOfficerSl.setError("অফিসার প্রয়োজন");
             inputOfficerSl.requestFocus();
@@ -358,6 +402,15 @@ public class AddAccusedActivity extends AppCompatActivity {
         int officerSl = 0;
         if (!TextUtils.isEmpty(officerDisplayName) && officerNameToSl.containsKey(officerDisplayName)) {
             officerSl = officerNameToSl.get(officerDisplayName);
+        } else if (isEditMode && !TextUtils.isEmpty(officerDisplayName)) {
+             // Try to find if the officerDisplayName matches the one we set in populate
+             for(Map.Entry<String, Integer> entry : officerNameToSl.entrySet()) {
+                 if (entry.getKey().startsWith(officerDisplayName)) {
+                     officerSl = entry.getValue();
+                     break;
+                 }
+             }
+             if (officerSl == 0) officerSl = editAccused.getOfficer_sl_no();
         }
 
         // Prepare data map
@@ -367,7 +420,7 @@ public class AddAccusedActivity extends AppCompatActivity {
         
         // Construct full address including village
         String fullAddress = address;
-        if (!TextUtils.isEmpty(village)) {
+        if (!TextUtils.isEmpty(village) && !address.contains(village)) {
             fullAddress = address + ", " + village;
         }
         accused.put("address", fullAddress);
@@ -381,54 +434,86 @@ public class AddAccusedActivity extends AppCompatActivity {
         accused.put("court_district", courtDist);
         accused.put("officer_sl_no", officerSl);
 
-        Map<String, Object> cpMap = new HashMap<>();
-        if (!TextUtils.isEmpty(cp)) {
-            cpMap.put("2026", cp);
-        }
-        accused.put("cp", cpMap);
+        if (isEditMode) {
+            // Update CP map
+            Map<String, Object> cpMap = new HashMap<>();
+            if (editAccused.getCp() != null) {
+                cpMap.putAll(editAccused.getCp());
+            }
+            if (!TextUtils.isEmpty(cp)) {
+                cpMap.put("2026", cp);
+            }
+            accused.put("cp", cpMap);
+            
+            // Update process map
+            Map<String, Object> processMap = new HashMap<>();
+            if (editAccused.getProcces() != null) {
+                processMap.putAll(editAccused.getProcces());
+            }
+            if (!TextUtils.isEmpty(process)) {
+                processMap.put("2026", process);
+            }
+            accused.put("procces", processMap);
 
-        Map<String, Object> processMap = new HashMap<>();
-        if (!TextUtils.isEmpty(process)) {
-            processMap.put("2026", process);
-        }
-        accused.put("procces", processMap);
-
-        Map<String, Object> statusMap = new HashMap<>();
-        statusMap.put("active", 1);
-        statusMap.put("step", 1);
-        accused.put("status", statusMap);
-
-        databaseReference.orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                long lastSerial = 0;
-                if (snapshot.exists()) {
-                    for (DataSnapshot child : snapshot.getChildren()) {
-                        try {
-                            lastSerial = Long.parseLong(child.getKey());
-                        } catch (NumberFormatException e) {}
-                    }
+            databaseReference.child(editAccused.getKey()).updateChildren(accused).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Record updated successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
                 }
-                
-                String newKey = String.valueOf(lastSerial + 1);
+            });
 
-                databaseReference.child(newKey).setValue(accused).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(AddAccusedActivity.this, "Record saved with serial: " + newKey, Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            Toast.makeText(AddAccusedActivity.this, "Failed to save record", Toast.LENGTH_SHORT).show();
+        } else {
+            Map<String, Object> cpMap = new HashMap<>();
+            if (!TextUtils.isEmpty(cp)) {
+                cpMap.put("2026", cp);
+            }
+            accused.put("cp", cpMap);
+
+            Map<String, Object> processMap = new HashMap<>();
+            if (!TextUtils.isEmpty(process)) {
+                processMap.put("2026", process);
+            }
+            accused.put("procces", processMap);
+
+            Map<String, Object> statusMap = new HashMap<>();
+            statusMap.put("active", 1);
+            statusMap.put("step", 1);
+            accused.put("status", statusMap);
+
+            databaseReference.orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    long lastSerial = 0;
+                    if (snapshot.exists()) {
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            try {
+                                lastSerial = Long.parseLong(child.getKey());
+                            } catch (NumberFormatException e) {}
                         }
                     }
-                });
-            }
+                    
+                    String newKey = String.valueOf(lastSerial + 1);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(AddAccusedActivity.this, "Database error", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    databaseReference.child(newKey).setValue(accused).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(AddAccusedActivity.this, "Record saved with serial: " + newKey, Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                Toast.makeText(AddAccusedActivity.this, "Failed to save record", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(AddAccusedActivity.this, "Database error", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }

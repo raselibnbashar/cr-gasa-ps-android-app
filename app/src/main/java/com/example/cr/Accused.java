@@ -19,6 +19,7 @@ public class Accused implements Serializable {
     private int active;
     private int step;
     private Map<String, String> procces;
+    private Map<String, String> cp;
 
     public Accused() {
     }
@@ -67,4 +68,7 @@ public class Accused implements Serializable {
 
     public Map<String, String> getProcces() { return procces; }
     public void setProcces(Map<String, String> procces) { this.procces = procces; }
+
+    public Map<String, String> getCp() { return cp; }
+    public void setCp(Map<String, String> cp) { this.cp = cp; }
 }
