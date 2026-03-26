@@ -34,6 +34,17 @@
             android:textStyle="bold" />
 
         <ImageView
+            android:id="@+id/editOfficerBtn"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/edit"
+            app:tint="@color/blue_400"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <ImageView
             android:id="@+id/deleteOfficerBtn"
             android:layout_width="32dp"
             android:layout_height="32dp"

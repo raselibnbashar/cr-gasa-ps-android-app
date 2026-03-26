@@ -48,7 +48,8 @@ public class OfficerRecordsActivity extends AppCompatActivity {
     private Button btnRunningFilter, btnDoneFilter, btnTotalFilter;
     private String currentMode = "running";
     private int officerSlNo;
-    private ImageView deleteOfficerBtn;
+    private ImageView deleteOfficerBtn, editOfficerBtn;
+    private Officer currentOfficer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +72,7 @@ public class OfficerRecordsActivity extends AppCompatActivity {
         tvOfficerRunningRecords = findViewById(R.id.tvOfficerRunningRecords);
         tvOfficerDoneRecords = findViewById(R.id.tvOfficerDoneRecords);
         deleteOfficerBtn = findViewById(R.id.deleteOfficerBtn);
+        editOfficerBtn = findViewById(R.id.editOfficerBtn);
         
         layoutRunning = findViewById(R.id.layoutRunning);
         layoutDone = findViewById(R.id.layoutDone);
@@ -83,6 +85,13 @@ public class OfficerRecordsActivity extends AppCompatActivity {
 
         backBtn.setOnClickListener(v -> finish());
         deleteOfficerBtn.setOnClickListener(v -> showDeleteConfirmation());
+        editOfficerBtn.setOnClickListener(v -> {
+            if (currentOfficer != null) {
+                Intent intent = new Intent(OfficerRecordsActivity.this, UpdateOfficerActivity.class);
+                intent.putExtra("officer", currentOfficer);
+                startActivity(intent);
+            }
+        });
 
         // Fetch officer details for the top card
         fetchOfficerDetails(officerSlNo);
@@ -148,45 +157,60 @@ public class OfficerRecordsActivity extends AppCompatActivity {
     }
 
     private void deleteOfficer() {
-        FirebaseDatabase.getInstance().getReference("officer")
-                .orderByChild("sl_no").equalTo(officerSlNo)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-                            for (DataSnapshot ds : snapshot.getChildren()) {
-                                ds.getRef().removeValue().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(OfficerRecordsActivity.this, "অফিসার সফলভাবে মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
-                                        finish();
-                                    } else {
-                                        Toast.makeText(OfficerRecordsActivity.this, "মুছে ফেলতে ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+        if (currentOfficer != null && currentOfficer.getKey() != null) {
+            FirebaseDatabase.getInstance().getReference("officer").child(currentOfficer.getKey())
+                    .removeValue().addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(OfficerRecordsActivity.this, "অফিসার সফলভাবে মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(OfficerRecordsActivity.this, "মুছে ফেলতে ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            // Fallback to sl_no if key is not available
+            FirebaseDatabase.getInstance().getReference("officer")
+                    .orderByChild("sl_no").equalTo(officerSlNo)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                for (DataSnapshot ds : snapshot.getChildren()) {
+                                    ds.getRef().removeValue().addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(OfficerRecordsActivity.this, "অফিসার সফলভাবে মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
+                                            finish();
+                                        }
+                                    });
+                                }
                             }
                         }
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
-                });
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {}
+                    });
+        }
     }
 
     private void fetchOfficerDetails(int slNo) {
         FirebaseDatabase.getInstance().getReference("officer")
                 .orderByChild("sl_no").equalTo(slNo)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             for (DataSnapshot ds : snapshot.getChildren()) {
-                                String name = ds.child("name_rank").getValue(String.class);
-                                String mobile = ds.child("mobile").getValue(String.class);
-                                if (name != null) {
-                                    titleText.setText(name + " এর রেকর্ডসমূহ");
-                                    tvOfficerName.setText(name);
-                                }
-                                if (mobile != null) {
-                                    tvOfficerMobile.setText(mobile);
+                                currentOfficer = ds.getValue(Officer.class);
+                                if (currentOfficer != null) {
+                                    currentOfficer.setKey(ds.getKey());
+                                    String name = currentOfficer.getName_rank();
+                                    String mobile = currentOfficer.getMobile();
+                                    if (name != null) {
+                                        titleText.setText(name + " এর রেকর্ডসমূহ");
+                                        tvOfficerName.setText(name);
+                                    }
+                                    if (mobile != null) {
+                                        tvOfficerMobile.setText(mobile);
+                                    }
                                 }
                             }
                         }
@@ -235,10 +259,12 @@ public class OfficerRecordsActivity extends AppCompatActivity {
                             if (statusSnap.exists()) {
                                 Object activeVal = statusSnap.child("active").getValue();
                                 if (activeVal != null) {
-                                    int active = Integer.parseInt(activeVal.toString());
-                                    accused.setActive(active);
-                                    if (active == 1) running++;
-                                    else if (active == 0) done++;
+                                    try {
+                                        int active = Integer.parseInt(activeVal.toString());
+                                        accused.setActive(active);
+                                        if (active == 1) running++;
+                                        else if (active == 0) done++;
+                                    } catch (NumberFormatException ignored) {}
                                 }
                                 Object stepVal = statusSnap.child("step").getValue();
                                 if (stepVal != null) {

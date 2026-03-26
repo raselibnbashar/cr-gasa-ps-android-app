@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="নতুন অফিসার যোগ করুন"
+            android:text="অফিসার আপডেট করুন"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -136,10 +136,10 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/saveOfficerBtn"
+                android:id="@+id/updateOfficerBtn"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="অফিসার যোগ করুন"
+                android:text="আপডেট করুন"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"

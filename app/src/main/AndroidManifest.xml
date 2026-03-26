@@ -43,6 +43,10 @@
             android:name=".AddOfficerActivity"
             android:exported="true" />
 
+        <activity
+            android:name=".UpdateOfficerActivity"
+            android:exported="true" />
+
     </application>
 
 </manifest>

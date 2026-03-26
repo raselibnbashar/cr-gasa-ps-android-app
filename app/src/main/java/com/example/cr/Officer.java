@@ -1,15 +1,23 @@
 package com.example.cr;
 
-public class Officer {
+import java.io.Serializable;
+
+public class Officer implements Serializable {
+    private String key;
     private String name_rank;
     private String mobile;
     private int sl_no;
     private String user_id;
+    private String user_password;
+    private String ward_no;
     private long totalRecords = 0;
     private long runningRecords = 0;
     private long doneRecords = 0;
 
     public Officer() {}
+
+    public String getKey() { return key; }
+    public void setKey(String key) { this.key = key; }
 
     public String getName_rank() { return name_rank; }
     public void setName_rank(String name_rank) { this.name_rank = name_rank; }
@@ -22,6 +30,12 @@ public class Officer {
 
     public String getUser_id() { return user_id; }
     public void setUser_id(String user_id) { this.user_id = user_id; }
+
+    public String getUser_password() { return user_password; }
+    public void setUser_password(String user_password) { this.user_password = user_password; }
+
+    public String getWard_no() { return ward_no; }
+    public void setWard_no(String ward_no) { this.ward_no = ward_no; }
 
     public long getTotalRecords() { return totalRecords; }
     public void setTotalRecords(long totalRecords) { this.totalRecords = totalRecords; }
