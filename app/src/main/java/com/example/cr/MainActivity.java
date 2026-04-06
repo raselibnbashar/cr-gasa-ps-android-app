@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     private View homeContent;
     private View fragmentContainer;
-    private ImageView navHome, navList, navMore;
+    private ImageView navHome, navList, navMore, navExtra;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         navHome = findViewById(R.id.home);
         navList = findViewById(R.id.list);
         navMore = findViewById(R.id.more);
+        navExtra = findViewById(R.id.extraA);
 
         accusedRecyclerView = findViewById(R.id.accusedFrontList);
         accusedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -188,6 +189,10 @@ public class MainActivity extends AppCompatActivity {
         navHome.setOnClickListener(v -> showHome());
         navList.setOnClickListener(v -> loadFragment(new ListFragment(), navList));
         navMore.setOnClickListener(v -> loadFragment(new MoreFragment(), navMore));
+        navExtra.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, Nav4thActivity.class);
+            startActivity(intent);
+        });
 
         // Home screen card clicks
         findViewById(R.id.runningWarrant).setOnClickListener(v -> loadFragment(ListFragment.newInstance("running"), navList));
@@ -242,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
         navHome.setColorFilter(white);
         navList.setColorFilter(white);
         navMore.setColorFilter(white);
+        navExtra.setColorFilter(white);
 
         selectedNav.setColorFilter(emerald);
     }

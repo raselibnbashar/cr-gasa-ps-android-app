@@ -47,6 +47,10 @@
             android:name=".UpdateOfficerActivity"
             android:exported="true" />
 
+        <activity
+            android:name=".Nav4thActivity"
+            android:exported="true" />
+
     </application>
 
 </manifest>
