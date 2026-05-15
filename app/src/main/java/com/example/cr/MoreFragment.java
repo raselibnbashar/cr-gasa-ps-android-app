@@ -43,7 +43,7 @@ import java.util.Map;
 public class MoreFragment extends Fragment {
 
     private TextView userName, userMobile, tvTotalRecords, tvRunningRecords, tvDoneRecords, tvOfficerCount;
-    private AppCompatButton btnBackup;
+    private AppCompatButton btnBackup, btnDownloadFullReport, btnFinalReport;
     private LinearLayout officerWiseTotalRecord;
     private MaterialButton logoutBtn;
     private FloatingActionButton btnAddOfficer;
@@ -76,6 +76,8 @@ public class MoreFragment extends Fragment {
         tvOfficerCount = view.findViewById(R.id.tvOfficerCount);
         logoutBtn = view.findViewById(R.id.logoutBtn);
         btnBackup = view.findViewById(R.id.btnBackup);
+        btnDownloadFullReport = view.findViewById(R.id.btnDownloadFullReport);
+        btnFinalReport = view.findViewById(R.id.btnFinalReport);
         btnAddOfficer = view.findViewById(R.id.btnAddOfficer);
         officerWiseTotalRecord = view.findViewById(R.id.officerWiseTotalRecord);
         rvOfficers = view.findViewById(R.id.rvOfficers);
@@ -96,6 +98,20 @@ public class MoreFragment extends Fragment {
                 intent.putExtra("officer_sl_no", currentOfficerSlNo);
                 startActivity(intent);
             }
+        });
+
+        btnDownloadFullReport.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ReportDownloadActivity.class);
+            intent.putExtra("officer_sl_no", -1); // -1 means All Districts/Data
+            intent.putExtra("report_type", "ac");
+            startActivity(intent);
+        });
+
+        btnFinalReport.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ReportDownloadActivity.class);
+            intent.putExtra("officer_sl_no", -1); // -1 means All Districts/Data
+            intent.putExtra("report_type", "final");
+            startActivity(intent);
         });
 
         btnBackup.setOnClickListener(v -> backupDatabase());

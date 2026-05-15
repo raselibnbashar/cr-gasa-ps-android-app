@@ -7,8 +7,11 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,8 +29,12 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class ListFragment extends Fragment {
 
@@ -38,10 +45,18 @@ public class ListFragment extends Fragment {
     private List<Accused> accusedList;
     private List<Accused> allActiveAccusedList;
     private List<Accused> currentFilterList;
-    private DatabaseReference databaseReference;
+    private DatabaseReference databaseReference, wardReference;
     
     private Button btnRunningFilter, btnDoneFilter, btnTotalFilter;
     private String currentMode = "running"; // Default mode
+    
+    private Spinner wardSpinner, villageSpinner;
+    private List<String> wardList = new ArrayList<>();
+    private List<String> villageList = new ArrayList<>();
+    private ArrayAdapter<String> wardAdapter, villageAdapter;
+    private String selectedWard = "সকল ওয়ার্ড";
+    private String selectedVillage = "সকল গ্রাম/মহল্লা";
+    private Map<String, List<String>> wardToVillages = new HashMap<>();
 
     public static ListFragment newInstance(String filterMode) {
         ListFragment fragment = new ListFragment();
@@ -63,6 +78,11 @@ public class ListFragment extends Fragment {
         btnRunningFilter = view.findViewById(R.id.btnRunningFilter);
         btnDoneFilter = view.findViewById(R.id.btnDoneFilter);
         btnTotalFilter = view.findViewById(R.id.btnTotalFilter);
+        
+        wardSpinner = view.findViewById(R.id.wardSpinner);
+        villageSpinner = view.findViewById(R.id.villageSpinner);
+
+        setupSpinners();
 
         accusedRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         accusedList = new ArrayList<>();
@@ -78,7 +98,9 @@ public class ListFragment extends Fragment {
         });
 
         databaseReference = FirebaseDatabase.getInstance().getReference("data");
+        wardReference = FirebaseDatabase.getInstance().getReference("ward");
         fetchData();
+        fetchWardData();
 
         btnRunningFilter.setOnClickListener(v -> updateFilterMode("running"));
         btnDoneFilter.setOnClickListener(v -> updateFilterMode("done"));
@@ -104,6 +126,107 @@ public class ListFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void setupSpinners() {
+        wardList.add("সকল ওয়ার্ড");
+        villageList.add("সকল গ্রাম/মহল্লা");
+
+        wardAdapter = new ArrayAdapter<>(requireContext(), R.layout.spinner_item, wardList);
+        wardAdapter.setDropDownViewResource(R.layout.spinner_item);
+        wardSpinner.setAdapter(wardAdapter);
+
+        villageAdapter = new ArrayAdapter<>(requireContext(), R.layout.spinner_item, villageList);
+        villageAdapter.setDropDownViewResource(R.layout.spinner_item);
+        villageSpinner.setAdapter(villageAdapter);
+
+        wardSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedWard = wardList.get(position);
+                updateVillageSpinner(selectedWard);
+                applyFilter();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        villageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedVillage = villageList.get(position);
+                applyFilter();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void fetchWardData() {
+        wardReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                wardList.clear();
+                wardToVillages.clear();
+                wardList.add("সকল ওয়ার্ড");
+                
+                if (snapshot.exists()) {
+                    for (DataSnapshot wardSnapshot : snapshot.getChildren()) {
+                        Object wardNoObj = wardSnapshot.child("ward_no").getValue();
+                        if (wardNoObj != null) {
+                            String wardNo = String.valueOf(wardNoObj);
+                            wardList.add(wardNo);
+                            
+                            List<String> villages = new ArrayList<>();
+                            DataSnapshot villageSnapshot = wardSnapshot.child("village");
+                            if (villageSnapshot.exists()) {
+                                for (DataSnapshot vSnap : villageSnapshot.getChildren()) {
+                                    Object vObj = vSnap.getValue();
+                                    if (vObj != null) {
+                                        String village = String.valueOf(vObj);
+                                        villages.add(village);
+                                    }
+                                }
+                            }
+                            wardToVillages.put(wardNo, villages);
+                        }
+                    }
+                }
+                wardAdapter.notifyDataSetChanged();
+                updateVillageSpinner(selectedWard);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void updateVillageSpinner(String wardNo) {
+        villageList.clear();
+        villageList.add("সকল গ্রাম/মহল্লা");
+        
+        if (wardNo.equals("সকল ওয়ার্ড")) {
+            TreeSet<String> allVillages = new TreeSet<>();
+            for (List<String> villages : wardToVillages.values()) {
+                allVillages.addAll(villages);
+            }
+            villageList.addAll(allVillages);
+        } else {
+            List<String> villages = wardToVillages.get(wardNo);
+            if (villages != null) {
+                Collections.sort(villages);
+                villageList.addAll(villages);
+            }
+        }
+        villageAdapter.notifyDataSetChanged();
+        
+        // Reset village selection if it's no longer in the list
+        if (!villageList.contains(selectedVillage)) {
+            villageSpinner.setSelection(0);
+            selectedVillage = "সকল গ্রাম/মহল্লা";
+        } else {
+            villageSpinner.setSelection(villageList.indexOf(selectedVillage));
+        }
     }
 
     private void updateFilterMode(String mode) {
@@ -169,13 +292,35 @@ public class ListFragment extends Fragment {
     private void applyFilter() {
         currentFilterList.clear();
         for (Accused accused : allActiveAccusedList) {
+            // Status Filter
+            boolean statusMatch = false;
             if (currentMode.equals("running")) {
-                if (accused.getActive() == 1) currentFilterList.add(accused);
+                statusMatch = (accused.getActive() == 1);
             } else if (currentMode.equals("done")) {
-                if (accused.getActive() == 0) currentFilterList.add(accused);
+                statusMatch = (accused.getActive() == 0);
             } else {
-                currentFilterList.add(accused);
+                statusMatch = true;
             }
+
+            if (!statusMatch) continue;
+
+            // Ward Filter
+            if (!selectedWard.equals("সকল ওয়ার্ড")) {
+                if (accused.getWard() == null || !accused.getWard().equals(selectedWard)) {
+                    continue;
+                }
+            }
+
+            // Village Filter
+            if (!selectedVillage.equals("সকল গ্রাম/মহল্লা")) {
+                // Check if address contains village name or is equal
+                String address = accused.getAddress();
+                if (address == null || !address.contains(selectedVillage)) {
+                    continue;
+                }
+            }
+
+            currentFilterList.add(accused);
         }
         filter(searchBarMain.getText().toString());
     }

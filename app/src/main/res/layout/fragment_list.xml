@@ -27,6 +27,7 @@
             android:textColor="@color/white" />
 
         <LinearLayout
+            android:id="@+id/statusFeature"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -68,6 +69,88 @@
                 android:background="@drawable/card_bg"
                 android:layout_marginStart="2dp"
                 app:cornerRadius="8dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/wardvillagewiseFeature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:weightSum="2">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                app:cardBackgroundColor="@color/slate_900"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/blue_500"
+                app:strokeWidth="1dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <Spinner
+                        android:id="@+id/wardSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="32dp"
+                        android:spinnerMode="dropdown" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/arrow_back"
+                        android:rotation="270"
+                        app:tint="@color/blue_400"
+                        android:contentDescription="dropdown" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                app:cardBackgroundColor="@color/slate_900"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/emerald_500"
+                app:strokeWidth="1dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <Spinner
+                        android:id="@+id/villageSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="32dp"
+                        android:spinnerMode="dropdown" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/arrow_back"
+                        android:rotation="270"
+                        app:tint="@color/emerald_400"
+                        android:contentDescription="dropdown" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 

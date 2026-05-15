@@ -23,14 +23,19 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -204,6 +209,7 @@ public class AccusedDetailActivity extends AppCompatActivity {
         headerPara.setAlignment(ParagraphAlignment.LEFT);
         headerPara.setSpacingAfter(0);
         XWPFRun headerRun = headerPara.createRun();
+        headerRun.setBold(true);
         headerRun.setText("বরাবর,");
         headerRun.addBreak();
         headerRun.addTab();
@@ -213,11 +219,12 @@ public class AccusedDetailActivity extends AppCompatActivity {
         headerRun.setText(currentAccused.getCourt_district() + "।");
 
         addParagraph(document, "", false);
-        addParagraph(document, "মাধ্যমঃ সহকারী পুলিশ কমিশনার (প্রসিকিউশন), মহানগর কোর্ট, গাজীপুর।", false);
+        addParagraph(document, "মাধ্যমঃ সহকারী পুলিশ কমিশনার (প্রসিকিউশন), মহানগর কোর্ট, গাজীপুর।", true);
 
         addParagraph(document, "", false);
         XWPFParagraph subjectPara = document.createParagraph();
         XWPFRun subjectRun = subjectPara.createRun();
+        subjectRun.setBold(true);
         subjectRun.setText("বিষয়ঃ বিনা তামিলে ওয়ারেন্ট ফেরত প্রদান প্রসঙ্গে।");
         subjectRun.setUnderline(UnderlinePatterns.SINGLE);
 
@@ -232,26 +239,85 @@ public class AccusedDetailActivity extends AppCompatActivity {
         }
 
         addParagraph(document, String.format("সূত্রঃ %s, ধারাঃ %s, প্রসেস নং- %s।", 
-                currentAccused.getCase_number(), currentAccused.getSection(), processNo), false);
+                currentAccused.getCase_number(), currentAccused.getSection(), processNo), true);
 
         addParagraph(document, "", false);
         addParagraph(document, "জনাব,", false);
 
-        String bodyText = String.format("বিনীত নিবেদন এই যে, আসামি %s, পিতা- %s, সাং-%s, ওয়ার্ড নং %s, থানা- %s, %s এর পরোয়ানাটি থানায় প্রাপ্তি সাপেক্ষে অফিসার ইনচার্জ %s থানা, স্যার আমার নামে হাওলা করিলে, পরোয়ানাভুক্ত আসামীর বর্ণিত বর্তমান ঠিকানায় গ্রেফতার অভিযান পরিচালনা কালে জানা যায় যে, সূত্রে বর্ণিত মামলার পরোয়ানায় উল্লেখিত ঠিকানায় এই নামে কোন ব্যক্তি বসবাস করে না। বিধায় আসামীকে খুঁজিয়া পাওয়া সম্ভব হচ্ছে না। এমনকি স্থানীয় গণ্যমান্য ব্যক্তিবর্গ আসামীর বসবাস সম্পর্কে সুনির্দিষ্ট কোন তথ্য দিতে না পারায় পরোয়ানাটি তামিল করা সম্ভব হইল না।",
-                currentAccused.getName(), currentAccused.getGuardian(), currentAccused.getAddress(), 
-                currentAccused.getWard(), currentAccused.getPs(), currentAccused.getDist(), currentAccused.getPs());
-        
         XWPFParagraph bodyPara = document.createParagraph();
         bodyPara.setAlignment(ParagraphAlignment.BOTH);
         XWPFRun bodyRun = bodyPara.createRun();
-        bodyRun.addTab(); // Added tab to first line of body text
-        bodyRun.setText(bodyText);
+        bodyRun.addTab();
+        bodyRun.setText("বিনীত নিবেদন এই যে, আসামি ");
+        
+        XWPFRun nameRun = bodyPara.createRun();
+        nameRun.setBold(true);
+        nameRun.setText(currentAccused.getName());
+        
+        XWPFRun restRun = bodyPara.createRun();
+        restRun.setText(String.format(", %s, সাং-%s, ওয়ার্ড নং %s, থানা- %s, %s এর পরোয়ানাটি থানায় প্রাপ্তি সাপেক্ষে অফিসার ইনচার্জ %s থানা, স্যার আমার নামে হাওলা করিলে, পরোয়ানাভুক্ত আসামীর বর্ণিত বর্তমান ঠিকানায় গ্রেফতার অভিযান পরিচালনা কালে জানা যায় যে, সূত্রে বর্ণিত মামলার পরোয়ানায় উল্লেখিত ঠিকানায় এই নামে কোন ব্যক্তি বসবাস করে না। বিধায় আসামীকে খুঁজিয়া পাওয়া সম্ভব হচ্ছে না। এমনকি স্থানীয় গণ্যমান্য ব্যক্তিবর্গ আসামীর বসবাস সম্পর্কে সুনির্দিষ্ট কোন তথ্য দিতে না পারায় পরোয়ানাটি তামিল করা সম্ভব হইল না।",
+                currentAccused.getGuardian(), currentAccused.getAddress(), 
+                currentAccused.getWard(), currentAccused.getPs(), currentAccused.getDist(), currentAccused.getPs()));
 
         addParagraph(document, "", false);
         XWPFParagraph ataPara = document.createParagraph();
+        ataPara.setAlignment(ParagraphAlignment.BOTH);
         XWPFRun ataRun = ataPara.createRun();
         ataRun.addTab();
         ataRun.setText("অতএব ,ইহা আপনার সদয় অবগতির ও পরবর্তী কার্যকরী ব্যবস্থা গ্রহণের জন্য প্রেরণ করিলাম।");
+
+        // add here line Break
+        addParagraph(document, "", false);
+        addParagraph(document, "", false);
+        addParagraph(document, "", false);
+
+        // Footer Start
+        XWPFTable footerTable = document.createTable(1, 2);
+        footerTable.setWidth("100%");
+
+        // Remove table borders
+        footerTable.setInsideHBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.NONE, 0, 0, "000000");
+        footerTable.setInsideVBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.NONE, 0, 0, "000000");
+        footerTable.setLeftBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.NONE, 0, 0, "000000");
+        footerTable.setRightBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.NONE, 0, 0, "000000");
+        footerTable.setTopBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.NONE, 0, 0, "000000");
+        footerTable.setBottomBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.NONE, 0, 0, "000000");
+
+        // Left Side
+        XWPFTableCell leftCell = footerTable.getRow(0).getCell(0);
+        XWPFParagraph lp = leftCell.getParagraphs().get(0);
+        XWPFRun lr = lp.createRun();
+        lr.setBold(true);
+        lr.setUnderline(UnderlinePatterns.SINGLE);
+        lr.setText("সংযুক্তঃ");
+
+        XWPFParagraph lp1 = leftCell.addParagraph();
+        lp1.createRun().setText("১। প্রত্যয়ন ০১ পাতা।");
+        XWPFParagraph lp2 = leftCell.addParagraph();
+        lp2.createRun().setText("২। ওয়ারেন্টের কপি ০১ পাতা।");
+
+        // Right Side
+        XWPFTableCell rightCell = footerTable.getRow(0).getCell(1);
+        XWPFParagraph rp = rightCell.getParagraphs().get(0);
+        rp.setAlignment(ParagraphAlignment.CENTER);
+        rp.createRun().setText("বিনীত");
+
+        XWPFParagraph rp1 = rightCell.addParagraph();
+        rp1.setAlignment(ParagraphAlignment.CENTER);
+        rp1.createRun().setText("(.......................................)");
+
+        XWPFParagraph rp2 = rightCell.addParagraph();
+        rp2.setAlignment(ParagraphAlignment.CENTER);
+        rp2.createRun().setText("বিপি-.......................");
+
+        XWPFParagraph rp3 = rightCell.addParagraph();
+        rp3.setAlignment(ParagraphAlignment.CENTER);
+        rp3.createRun().setText("এএসআই (নিঃ)");
+
+        XWPFParagraph rp4 = rightCell.addParagraph();
+        rp4.setAlignment(ParagraphAlignment.CENTER);
+        rp4.createRun().setText(officerStation);
+        // Footer End
 
         addParagraph(document, "", false);
 
@@ -276,7 +342,7 @@ public class AccusedDetailActivity extends AppCompatActivity {
         addParagraph(document, "", false);
         addParagraph(document, "", false);
 
-        String bodyText = String.format("এই মর্মে প্রত্যয়ন করা যাইতেছে যে, %s, পিতা- %s, সাং-%s, ওয়ার্ড নং-%s, থানা-%s, %s। উক্ত ব্যক্তি পূর্বে ভাড়াটিয়া হিসেবে বসবাস করিলেও বর্তমানে আমার জানামতে অত্র এলাকায় বসবাস করে না। আমি ব্যক্তিগতভাবে তাহাকে চিনি না।",
+        String bodyText = String.format("এই মর্মে প্রত্যয়ন করা যাইতেছে যে, %s, %s, সাং-%s, ওয়ার্ড নং-%s, থানা-%s, %s। উক্ত ব্যক্তি পূর্বে ভাড়াটিয়া হিসেবে বসবাস করিলেও বর্তমানে আমার জানামতে অত্র এলাকায় বসবাস করে না। আমি ব্যক্তিগতভাবে তাহাকে চিনি না।",
                 currentAccused.getName(), currentAccused.getGuardian(), currentAccused.getAddress(),
                 currentAccused.getWard(), currentAccused.getPs(), currentAccused.getDist());
 
