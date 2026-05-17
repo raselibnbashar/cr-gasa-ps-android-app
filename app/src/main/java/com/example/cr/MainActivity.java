@@ -1,18 +1,29 @@
 package com.example.cr;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -30,6 +41,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +49,10 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences sharedPreferences;
     private ImageView themeToggleIcon;
-    private TextView totalAccused, runningAccused, doneAccused, searchTotalItem;
+    private TextView totalAccused, runningAccused, doneAccused, searchTotalItem, tvOnlineCount;
+    private View sponsorLayout;
     private EditText searchBarMain;
-    private DatabaseReference databaseReference;
+    private DatabaseReference databaseReference, presenceReference;
     
     private RecyclerView accusedRecyclerView;
     private AccusedAdapter accusedAdapter;
@@ -49,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private View homeContent;
     private View fragmentContainer;
     private ImageView navHome, navList, navMore, navExtra;
+    private static final int PERMISSION_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         doneAccused = findViewById(R.id.doneAccused);
         searchTotalItem = findViewById(R.id.searchTotalItem);
         searchBarMain = findViewById(R.id.searchBarMain);
+        sponsorLayout = findViewById(R.id.sponsorText);
+        tvOnlineCount = findViewById(R.id.tvOnlineCount);
         
         homeContent = findViewById(R.id.home_content);
         fragmentContainer = findViewById(R.id.fragment_container);
@@ -103,10 +119,26 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Online User Count Button Click Listener
+        findViewById(R.id.sponsorText).setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, UserPresenceActivity.class);
+            startActivity(intent);
+        });
+
         updateIcon(isDarkMode);
 
         // Initialize Firebase Reference
         databaseReference = FirebaseDatabase.getInstance().getReference("data");
+        presenceReference = FirebaseDatabase.getInstance().getReference("presence");
+
+        // Request necessary permissions
+        checkAndRequestPermissions();
+
+        // Set up current user presence
+        setupPresence();
+
+        // Fetch Total Active User (Presence) count
+        fetchActiveUserCount();
 
         // Listen for data changes to count records and update list
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -220,6 +252,115 @@ public class MainActivity extends AppCompatActivity {
         WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
         controller.setAppearanceLightStatusBars(!isDarkMode);
         controller.setAppearanceLightNavigationBars(!isDarkMode);
+    }
+
+    private void checkAndRequestPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.READ_PHONE_STATE);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_PHONE_NUMBERS);
+            }
+        }
+
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsNeeded.toArray(new String[0]), PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            setupPresence();
+        }
+    }
+
+    private void setupPresence() {
+        SharedPreferences loginPrefs = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        String userId = loginPrefs.getString("userId", "");
+        if (userId.isEmpty()) return;
+
+        // Create a unique session reference for this specific device connection
+        DatabaseReference presenceRef = FirebaseDatabase.getInstance().getReference("presence");
+        DatabaseReference sessionRef = presenceRef.push();
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+
+        Map<String, Object> deviceDetails = new HashMap<>();
+        deviceDetails.put("user_id", userId.replace(".", "_"));
+        deviceDetails.put("model", Build.MODEL);
+        deviceDetails.put("android_version", Build.VERSION.RELEASE);
+        
+        // Get Unique ID (Android ID) as IMEI fallback
+        String androidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        deviceDetails.put("device_id", androidId);
+
+        // Try to get Phone Number
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS) == PackageManager.PERMISSION_GRANTED) {
+            TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            try {
+                String phoneNumber = tm.getLine1Number();
+                if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                    deviceDetails.put("mobile_number", phoneNumber);
+                }
+                
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    String imei = tm.getDeviceId();
+                    if (imei != null) deviceDetails.put("imei", imei);
+                }
+            } catch (SecurityException ignored) {}
+        }
+
+        // Try to get Location
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            try {
+                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (location == null) {
+                    location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                }
+                if (location != null) {
+                    deviceDetails.put("lat", location.getLatitude());
+                    deviceDetails.put("lng", location.getLongitude());
+                }
+            } catch (SecurityException ignored) {}
+        }
+
+        connectedRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Boolean connected = snapshot.getValue(Boolean.class);
+                if (connected != null && connected) {
+                    sessionRef.setValue(deviceDetails);
+                    sessionRef.onDisconnect().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void fetchActiveUserCount() {
+        presenceReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long count = 0;
+                if (snapshot.exists()) {
+                    count = snapshot.getChildrenCount();
+                }
+                tvOnlineCount.setText("অ্যাপে বর্তমানে মোট লগইন: " + count + " টি");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 
     private void showHome() {
